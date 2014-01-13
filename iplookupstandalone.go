@@ -3,30 +3,46 @@
 	It provides functionality comparable to http://jsonip.appspot.com
 */
 
-package getipaddress
+package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
+	"github.com/LukeMauldin/goext/applog"
 	"net/http"
+	"strings"
+)
+
+var (
+	listenAddress = flag.String("listenAddress", ":8080", "HTTP listen address")
 )
 
 func main() {
 	//Log any panics
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Printf("Panic: %v", err)
+			applog.Errorf("Panic: %v", err)
 		}
 	}()
 
+	//Parse flag variables
+	flag.Parse()
+
+	//Start HTTP server
+	applog.Infof("Listening on address: %v", *listenAddress)
 	http.HandleFunc("/GetClientIPAddress", errorHandler(handlerGetClientIPAddress))
+	err := http.ListenAndServe(*listenAddress, nil)
+	if err != nil {
+		applog.Errorf("%v", err)
+	}
 }
 
 func handlerGetClientIPAddress(w http.ResponseWriter, r *http.Request) error {
 	//Verify that request has an origin handler
-	if r.Header.Get("Origin") == "" {
-		return newErrorHttp(http.StatusBadRequest, "Cross domain request require Origin header")
-	}
+	//if r.Header.Get("Origin") == "" {
+	//		return newErrorHttp(http.StatusBadRequest, "Cross domain request require Origin header")
+	//	}
 
 	//Verify that the request method is a GET
 	if r.Method != "GET" {
@@ -40,7 +56,7 @@ func handlerGetClientIPAddress(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Add("Cache-Control", "no-cache")
 
 	//Get IP address from request and set it in return data
-	retData := &getClientIPAddressReturn{IP: r.RemoteAddr}
+	retData := &getClientIPAddressReturn{IP: stripPort(r.RemoteAddr)}
 	encodedRetData, err := json.Marshal(retData)
 	if err != nil {
 		return newErrorHttp(http.StatusInternalServerError, err.Error())
@@ -96,3 +112,12 @@ func newErrorHttp(code int, message string) error {
 }
 
 type httpHandler func(http.ResponseWriter, *http.Request) error
+
+func stripPort(ipAddress string) string {
+	index := strings.Index(ipAddress, ":")
+	if index == -1 {
+		return ipAddress
+	} else {
+		return ipAddress[0:index]
+	}
+}
