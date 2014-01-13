@@ -89,6 +89,3 @@ func newErrorHttp(code int, message string) error {
 }
 
 type httpHandler func(http.ResponseWriter, *http.Request) error
-
-//Run on dev command: E:\>E:\Go\go_appengine\dev_appserver.py E:\Go\GoExternal\src\appengine\getipaddress
-//Update comand: E:\>E:\Go\go_appengine\appcfg.py update E:\Go\GoExternal\src\appengine\getipaddress
