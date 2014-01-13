@@ -40,9 +40,9 @@ func main() {
 
 func handlerGetClientIPAddress(w http.ResponseWriter, r *http.Request) error {
 	//Verify that request has an origin handler
-	//if r.Header.Get("Origin") == "" {
-	//		return newErrorHttp(http.StatusBadRequest, "Cross domain request require Origin header")
-	//	}
+	if r.Header.Get("Origin") == "" {
+		return newErrorHttp(http.StatusBadRequest, "Cross domain request require Origin header")
+	}
 
 	//Verify that the request method is a GET
 	if r.Method != "GET" {
