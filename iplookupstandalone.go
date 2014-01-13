@@ -11,7 +11,14 @@ import (
 	"net/http"
 )
 
-func init() {
+func main() {
+	//Log any panics
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Printf("Panic: %v", err)
+		}
+	}()
+
 	http.HandleFunc("/GetClientIPAddress", errorHandler(handlerGetClientIPAddress))
 }
 
